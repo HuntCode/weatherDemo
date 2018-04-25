@@ -1,5 +1,6 @@
 package com.example.weatherdemo;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import com.example.weatherdemo.gson.Forecast;
 import com.example.weatherdemo.gson.Weather;
+import com.example.weatherdemo.service.AutoUpdateService;
 import com.example.weatherdemo.util.HttpUtil;
 import com.example.weatherdemo.util.Utility;
 
@@ -180,5 +182,11 @@ public class WeatherActivity extends AppCompatActivity {
         sportText.setText(sport);
 
         weatherLayout.setVisibility(View.VISIBLE);
+
+        /**
+         * 启动后台更新服务
+         */
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 }
