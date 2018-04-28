@@ -2,7 +2,9 @@ package com.example.weatherdemo.gson;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Suggestion {
+import java.io.Serializable;
+
+public class Suggestion implements Serializable {
     @SerializedName("comf")
     public Comfort comfort;
 
@@ -11,17 +13,17 @@ public class Suggestion {
 
     public Sport sport;
 
-    public class Comfort{
+    public class Comfort implements Serializable {
         @SerializedName("txt")
         public String info;
     }
 
-    public class CarWash{
+    public class CarWash implements Serializable {
         @SerializedName("txt")
         public String info;
     }
 
-    public class Sport{
+    public class Sport implements Serializable {
         @SerializedName("txt")
         public String info;
     }

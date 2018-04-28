@@ -1,13 +1,18 @@
 package com.example.weatherdemo;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +26,7 @@ import com.example.weatherdemo.gson.Weather;
 import com.example.weatherdemo.service.AutoUpdateService;
 import com.example.weatherdemo.util.HttpUtil;
 import com.example.weatherdemo.util.Utility;
+import com.google.gson.Gson;
 
 import org.w3c.dom.Text;
 
@@ -31,7 +37,6 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class WeatherActivity extends AppCompatActivity {
-
     private ScrollView weatherLayout;
     private TextView titleCity;
     private TextView titleUpdateTime;
@@ -49,6 +54,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     public DrawerLayout drawerLayout;
     private Button navButton;
+
+    private IntentFilter intentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,19 +101,32 @@ public class WeatherActivity extends AppCompatActivity {
             }
         });
 
-        navButton.setOnClickListener(new View.OnClickListener(){
+        navButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
+
+        /**
+         * 注册广播接收器
+         */
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("com.example.weatherdemo.UPDATE_WEATHER");
+        registerReceiver(new UpdateWeatherReceiver(), intentFilter);
+
+        /**
+         * 启动后台更新服务
+         */
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     /**
      * 根据weather_id请求天气
      */
     public void requestWeather(final String weatherId) {
-        String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=bc0418b57b2d4918819d3974ac1285d9";
+        String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=2d018dcb8ecd44028c2d7a075f5eac4c";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -123,6 +143,7 @@ public class WeatherActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 final String responseText = response.body().string();
                 final Weather weather = Utility.handleWeatherResponse(responseText);
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -183,10 +204,20 @@ public class WeatherActivity extends AppCompatActivity {
 
         weatherLayout.setVisibility(View.VISIBLE);
 
-        /**
-         * 启动后台更新服务
-         */
-        Intent intent = new Intent(this, AutoUpdateService.class);
-        startService(intent);
+    }
+
+    /**
+     * 本地广播接收器
+     */
+    class UpdateWeatherReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Weather weather = (Weather) intent.getSerializableExtra("update_weather");
+
+            //String update_weather = intent.getStringExtra("update_weather");
+            //Weather weather = new Gson().fromJson(update_weather, Weather.class);
+            showWeatherInfo(weather);
+            Toast.makeText(context, "hello", Toast.LENGTH_SHORT).show();
+        }
     }
 }

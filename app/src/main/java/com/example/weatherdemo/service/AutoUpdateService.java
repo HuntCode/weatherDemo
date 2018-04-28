@@ -14,6 +14,7 @@ import android.util.Log;
 import com.example.weatherdemo.gson.Weather;
 import com.example.weatherdemo.util.HttpUtil;
 import com.example.weatherdemo.util.Utility;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 
@@ -36,7 +37,7 @@ public class AutoUpdateService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         updateWeather();
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int updateTimeInterval = 8 * 60 * 60 * 1000;
+        int updateTimeInterval = 1 * 60 * 60 * 1000;
         Log.i(Tag, "updateWeather.............");
         long triggerAtTime = SystemClock.elapsedRealtime() + updateTimeInterval;
         Intent i = new Intent(this, AutoUpdateService.class);
@@ -52,7 +53,7 @@ public class AutoUpdateService extends Service {
         if (weatherString != null) {
             final Weather weather = Utility.handleWeatherResponse(weatherString);
             String weatherId = weather.basic.weatherId;
-            String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=bc0418b57b2d4918819d3974ac1285d9";
+            String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId + "&key=2d018dcb8ecd44028c2d7a075f5eac4c";
             HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -67,6 +68,14 @@ public class AutoUpdateService extends Service {
                         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(AutoUpdateService.this).edit();
                         editor.putString("weather", responseText);
                         editor.apply();
+
+                        /**
+                         * 通知界面更新天气信息
+                         */
+                        Intent intent = new Intent("com.example.weatherdemo.UPDATE_WEATHER");
+                        //intent.putExtra("update_weather", new Gson().toJson(weather));
+                        intent.putExtra("update_weather", weather);
+                        sendBroadcast(intent);
                     }
                 }
             });

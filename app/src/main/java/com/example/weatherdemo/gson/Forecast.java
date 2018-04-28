@@ -2,7 +2,9 @@ package com.example.weatherdemo.gson;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Forecast {
+import java.io.Serializable;
+
+public class Forecast implements Serializable {
     public String date;
     @SerializedName("tmp")
     public Temperature temperature;
@@ -10,12 +12,12 @@ public class Forecast {
     @SerializedName("cond")
     public More more;
 
-    public class Temperature{
+    public class Temperature implements Serializable {
         public String max;
         public String min;
     }
 
-    public class More{
+    public class More implements Serializable {
         @SerializedName("txt_d")
         public String info;
     }
